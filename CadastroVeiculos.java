@@ -25,22 +25,18 @@ public class CadastroVeiculos {
                 case 1:
                     cadastrarVeiculo();
                     retornarMenu();
-                    scan.nextLine();
                     break;
                 case 2:
                     listaVeiculos();
                     retornarMenu();
-                    scan.nextLine();
                     break;
                 case 3:
                     removerVeiculo();
                     retornarMenu();
-                    scan.nextLine();
                     break;
                 case 4:
                     pesquisarVeiculo();
                     retornarMenu();
-                    scan.nextLine();
                     break;
                 case 0:
                     System.out.println("Obrigado por utilizar nosso sistema. Até logo!");
@@ -77,14 +73,14 @@ public class CadastroVeiculos {
         }
         return true;
     }
-    
+
     static boolean validarPlaca(String placa) {
         String placaFormatada = placa.toUpperCase();
         if (!placaFormatada.matches("[A-Z]{3}[0-9][A-Z][0-9]{2}")) {
             System.out.println("Placa inválida: formato esperado é ABC1D23.");
             return false;
         }
-        for (Veiculo veiculo : veiculos ) {
+        for (Veiculo veiculo : veiculos) {
             if (placaFormatada.equals(veiculo.getPlaca())) {
                 System.out.println("Já existe um veículo cadastrado com essa placa. Tente novamente.");
                 return false;
@@ -92,7 +88,6 @@ public class CadastroVeiculos {
         }
         return true;
     }
-
 
     static void listaVeiculos() {
         if (veiculos.isEmpty()) {
@@ -113,31 +108,38 @@ public class CadastroVeiculos {
             return;
         }
         listaVeiculos();
-        String placa = Input.scanString("Digite a placa do veículo que deseja excluir: ", scan);
-        boolean controle = veiculos.removeIf(veiculo -> placa.equalsIgnoreCase(veiculo.getPlaca()));
-        if (controle) {
-            System.out.println("O veículo foi excluído com sucesso!");
-        } else {
-            System.out.println("Placa não encontrada, voltando pro menu...");
+            while (true) {
+            String placa = Input.scanString("Digite a placa do veículo que deseja excluir, ou 0 pra retornar pro menu: ", scan);
+            if (placa.equals("0")) {
+                return;
+            }
+            boolean controle = veiculos.removeIf(veiculo -> placa.equalsIgnoreCase(veiculo.getPlaca()));
+            if (controle) {
+                System.out.println("O veículo foi excluído com sucesso!");
+                break;
+            } else {
+                System.out.println("Placa não encontrada, tente novamente.");
+            }
         }
 
     }
 
     static void pesquisarVeiculo() {
+
         if (veiculos.isEmpty()) {
             System.out.println("Não há nenhum veículo cadastrado");
+            retornarMenu();
             return;
         }
+
         String tipoPesquisa;
         String pesquisa = "";
 
         while (true) {
             tipoPesquisa = Input.scanString("Você deseja pesquisar por placa ou modelo? ", scan);
             if (tipoPesquisa.equalsIgnoreCase("placa")) {
-                pesquisa = Input.scanString("Digite a placa do veículo: ", scan);
                 break;
             } else if (tipoPesquisa.equalsIgnoreCase("modelo")) {
-                pesquisa = Input.scanString("Digite o modelo do veículo: ", scan);
                 break;
             } else {
                 System.out.println("Opção inválida, escolha entre placa ou modelo pra realizar a pesquisa. Tente novamente.");
@@ -145,33 +147,54 @@ public class CadastroVeiculos {
         }
 
         boolean controle = false;
+        int tentativas = 0;
 
-        for (Veiculo veiculo : veiculos) {
-            if (tipoPesquisa.equalsIgnoreCase("placa") && pesquisa.equalsIgnoreCase(veiculo.getPlaca())) {
-                if (!controle) {
-                    System.out.println("=== Resultado da Pesquisa ===");
+        while (!controle) {
+            if (tipoPesquisa.equalsIgnoreCase("placa")) {
+                pesquisa = Input.scanString("Digite a placa do veículo, ou 0 pra retornar pro menu: ", scan);
+                if (pesquisa.equals("0")) {
+                    return;
                 }
-                System.out.println(veiculo);
-                controle = true;
-                break;
-            } else if (tipoPesquisa.equalsIgnoreCase("modelo")
-                    && veiculo.getModelo().toLowerCase().contains(pesquisa.toLowerCase())) {
-                if (!controle) {
-                    System.out.println("=== Resultado da Pesquisa ===");
+            } else {
+                pesquisa = Input.scanString("Digite o modelo do veículo, ou 0 pra retornar pro menu: ", scan);
+                if (pesquisa.equals("0")) {
+                    return;
                 }
-                System.out.println(veiculo);
-                controle = true;
             }
-        }
 
-        if (!controle) {
-            System.out.println("Veículo não encontrado, voltando pro menu.");
+            for (Veiculo veiculo : veiculos) {
+                if (tipoPesquisa.equalsIgnoreCase("placa") && pesquisa.equalsIgnoreCase(veiculo.getPlaca())) {
+                    if (!controle) {
+                        System.out.println("=== Resultado da Pesquisa ===");
+                    }
+                    System.out.println(veiculo);
+                    controle = true;
+                    break;
+                } else if (tipoPesquisa.equalsIgnoreCase("modelo")
+                        && veiculo.getModelo().toLowerCase().contains(pesquisa.toLowerCase())) {
+                    if (!controle) {
+                        System.out.println("=== Resultado da Pesquisa ===");
+                    }
+                    System.out.println(veiculo);
+                    controle = true;
+                }
+            }
+
+            if (!controle) {
+                System.out.println("Veículo não encontrado, tente novamente.");
+                tentativas++;
+                if (tentativas == 5) {
+                    System.out.println("Limite de tentativas atingido.");
+                    break;
+                }
+            }
         }
 
     }
 
     static void retornarMenu() {
-        System.out.println("Presione Enter para retornar pro menu.");
+        System.out.println("Presione Enter para confirmar.");
+        scan.nextLine();
     }
 
 }
