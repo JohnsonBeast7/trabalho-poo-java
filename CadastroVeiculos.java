@@ -23,23 +23,23 @@ public class CadastroVeiculos {
             opcao = Input.scanInt("Escolha uma opção: ", scan);
             switch (opcao) {
                 case 1:
-                    cadastraVeiculo();
-                    System.out.println("Pressione Enter para continuar");
+                    cadastrarVeiculo();
+                    retornarMenu();
                     scan.nextLine();
                     break;
                 case 2:
                     listaVeiculos();
-                    System.out.println("Pressione Enter para continuar");
+                    retornarMenu();
                     scan.nextLine();
                     break;
                 case 3:
                     removerVeiculo();
-                    System.out.println("Presione Enter para continuar");
+                    retornarMenu();
                     scan.nextLine();
                     break;
                 case 4:
                     pesquisarVeiculo();
-                    System.out.println("Presione Enter para continuar");
+                    retornarMenu();
                     scan.nextLine();
                     break;
                 case 0:
@@ -52,15 +52,47 @@ public class CadastroVeiculos {
         } while (opcao != 0);
     }
 
-    static void cadastraVeiculo() {
+    static void cadastrarVeiculo() {
         System.out.println("==== Cadastrando novo veículo ====");
         String marca = Input.scanString("Digite a marca do veículo: ", scan);
         String modelo = Input.scanString("Digite o modelo do veículo: ", scan);
-        int ano = Input.scanInt("Digite o ano do veículo: ", scan);
-        String placa = Input.scanString("Digite a placa do veículo (EX: ABC-123): ", scan);
+        int ano;
+        do {
+            ano = Input.scanInt("Digite o ano do veículo: ", scan);
+        } while (!validarAno(ano));
+        String placa;
+        do {
+            placa = Input.scanString("Digite a placa do veículo (EX: BRA1S23): ", scan);
+        } while (!validarPlaca(placa));
+        placa = placa.toUpperCase();
         Veiculo veiculo = new Veiculo(marca, modelo, ano, placa);
         veiculos.add(veiculo);
+        System.out.println("Veículo cadastrado com sucesso!");
     }
+
+    static boolean validarAno(int ano) {
+        if (ano < 1886) {
+            System.out.println("O ano do veículo não pode ser menor que 1886.");
+            return false;
+        }
+        return true;
+    }
+    
+    static boolean validarPlaca(String placa) {
+        String placaFormatada = placa.toUpperCase();
+        if (!placaFormatada.matches("[A-Z]{3}[0-9][A-Z][0-9]{2}")) {
+            System.out.println("Placa inválida: formato esperado é ABC1D23.");
+            return false;
+        }
+        for (Veiculo veiculo : veiculos ) {
+            if (placaFormatada.equals(veiculo.getPlaca())) {
+                System.out.println("Já existe um veículo cadastrado com essa placa. Tente novamente.");
+                return false;
+            }
+        }
+        return true;
+    }
+
 
     static void listaVeiculos() {
         if (veiculos.isEmpty()) {
@@ -76,10 +108,13 @@ public class CadastroVeiculos {
     }
 
     static void removerVeiculo() {
+        if (veiculos.isEmpty()) {
+            System.out.println("Não há nenhum veículo cadastrado");
+            return;
+        }
         listaVeiculos();
-        String placa = Input.scanString("Digite a placa do veículo que deseja remover: ", scan);
-        boolean controle = veiculos.removeIf(v -> placa.equalsIgnoreCase(v.getPlaca()));
-
+        String placa = Input.scanString("Digite a placa do veículo que deseja excluir: ", scan);
+        boolean controle = veiculos.removeIf(veiculo -> placa.equalsIgnoreCase(veiculo.getPlaca()));
         if (controle) {
             System.out.println("O veículo foi excluído com sucesso!");
         } else {
@@ -89,17 +124,24 @@ public class CadastroVeiculos {
     }
 
     static void pesquisarVeiculo() {
-
-        String tipoPesquisa = Input.scanString("Você deseja pesquisar por placa ou modelo?: ", scan);
+        if (veiculos.isEmpty()) {
+            System.out.println("Não há nenhum veículo cadastrado");
+            return;
+        }
+        String tipoPesquisa;
         String pesquisa = "";
 
-        if (tipoPesquisa.equalsIgnoreCase("placa")) {
-            pesquisa = Input.scanString("Digite a placa do veículo:", scan);
-        } else if (tipoPesquisa.equalsIgnoreCase("modelo")) {
-            pesquisa = Input.scanString("Digite o modelo do veículo:", scan);
-        } else {
-            System.out.println("Opção inválida, escolha entre placa ou modelo pra realizar a pesquisa.");
-            return;
+        while (true) {
+            tipoPesquisa = Input.scanString("Você deseja pesquisar por placa ou modelo? ", scan);
+            if (tipoPesquisa.equalsIgnoreCase("placa")) {
+                pesquisa = Input.scanString("Digite a placa do veículo: ", scan);
+                break;
+            } else if (tipoPesquisa.equalsIgnoreCase("modelo")) {
+                pesquisa = Input.scanString("Digite o modelo do veículo: ", scan);
+                break;
+            } else {
+                System.out.println("Opção inválida, escolha entre placa ou modelo pra realizar a pesquisa. Tente novamente.");
+            }
         }
 
         boolean controle = false;
@@ -112,7 +154,8 @@ public class CadastroVeiculos {
                 System.out.println(veiculo);
                 controle = true;
                 break;
-            } else if (tipoPesquisa.equalsIgnoreCase("modelo") && veiculo.getModelo().toLowerCase().contains(pesquisa.toLowerCase())) {
+            } else if (tipoPesquisa.equalsIgnoreCase("modelo")
+                    && veiculo.getModelo().toLowerCase().contains(pesquisa.toLowerCase())) {
                 if (!controle) {
                     System.out.println("=== Resultado da Pesquisa ===");
                 }
@@ -122,9 +165,13 @@ public class CadastroVeiculos {
         }
 
         if (!controle) {
-            System.out.println("Veículo não encontrado, tente novamente.");
+            System.out.println("Veículo não encontrado, voltando pro menu.");
         }
 
+    }
+
+    static void retornarMenu() {
+        System.out.println("Presione Enter para retornar pro menu.");
     }
 
 }
